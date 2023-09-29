@@ -1,0 +1,46 @@
+version: "3.7"
+services:
+  # mqtt5 eclipse-mosquitto
+  mosquitto:
+    # tasmota_62170C
+    # %prefix%/%topic%/
+    # DVES_62170C
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    ports:
+      - "1883:1883" #default mqtt port
+      - "9001:9001" #default mqtt port for websockets
+    volumes:
+      - ./config:/mosquitto/config:rw
+      - ./data:/mosquitto/data:rw
+      - ./log:/mosquitto/log:rw
+    networks:
+      - mynet
+
+  nodered:
+    image: nodered/node-red
+    # container_name: node-red
+    networks:
+    - mynet
+    environment:
+    - SERVICE_NAME=node-red
+    ports:
+    - "1880:1880"
+    volumes:
+    - ${PWD}/node-red/data:/data
+    # - ${PWD}/node-red/modules:/root/.node-red
+    links:
+    - mosquitto
+
+# volumes for mapping data,config and log
+volumes:
+  config:
+  data:
+  log:
+
+networks:
+  mynet:
+      # use the bridge driver, but enable IPv6
+      driver: bridge
+      # driver_opts:
+      #     com.docker.network.enable_ipv6: "true"
